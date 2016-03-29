@@ -1,0 +1,84 @@
+#! /usr/bin/python
+
+import sys
+import os
+import re
+import configparser
+
+from os.path import expanduser
+home = expanduser("~")
+
+config = configparser.ConfigParser()
+config.read(os.path.join(os.path.abspath(os.path.dirname("home")),'.pymail', 'config.ini'))
+defaults = config['Config']
+
+SMTPserver = defaults['smtpaddr']
+SMTPport = defaults['smtpport']
+blankmsg = defaults['blankmsg'] 
+blanksub = defaults['blanksub']
+USERNAME = defaults['username']
+PASSWORD = defaults['password']
+sender = USERNAME
+
+if len(sys.argv) == 1:
+    destination = sender
+    subject = blanksub
+    content = blankmsg
+if len(sys.argv) == 2:
+    destination = sys.argv[1] 
+    subject = blanksub
+    content = blankmsg
+if len(sys.argv) == 3:
+    destination = sys.argv[1] 
+    subject = sys.argv[2]
+
+    content = blankmsg
+if len(sys.argv) == 4:
+
+    destination = sys.argv[1] 
+    subject = sys.argv[2]
+    content = sys.argv[3]
+if len(sys.argv) >= 5:
+    destination = sys.argv[1] 
+    subject = sys.argv[2]
+    content = sys.argv[3]
+    filename = "".join(sys.argv[4:])
+
+
+# typical values for text_subtype are plain, html, xml
+text_subtype = 'plain'
+
+from smtplib import SMTP
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
+
+try:
+    msg = MIMEMultipart(content, text_subtype)
+    msg['Subject']= subject
+    msg['From']   = sender # some SMTP servers will do this automatically, not all
+    conn = SMTP(SMTPserver, SMTPport)
+    conn.ehlo()
+    conn.starttls()
+    conn.set_debuglevel(False)
+    conn.login(USERNAME, PASSWORD)
+    try:
+        if len(sys.argv) >= 5:
+            for filename in sys.argv[4:]:
+                f = filename
+                part = MIMEBase('application', "octet-stream")
+                part.set_payload( open(f,"rb").read() )
+                encoders.encode_base64(part)
+                part.add_header('Content-Disposition', 'attachment; filename="%s"' % os.path.basename(f))
+                msg.attach(part)
+        body = MIMEText(content, 'plain')
+        msg.attach(body)
+        conn.sendmail(sender, destination, msg.as_string())
+    finally:
+        conn.quit()
+        print ("Message sent to",destination,"with subject",subject+".")
+
+except Exception as e:
+    sys.exit( "mail failed; %s" % str(e) ) # give a error message
+

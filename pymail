@@ -31,10 +31,8 @@ if len(sys.argv) == 2:
 if len(sys.argv) == 3:
     destination = sys.argv[1] 
     subject = sys.argv[2]
-
     content = blankmsg
 if len(sys.argv) == 4:
-
     destination = sys.argv[1] 
     subject = sys.argv[2]
     content = sys.argv[3]

@@ -7,7 +7,7 @@ The config file goes in ~/.pymail/config.ini, and a default config file is inclu
 
 The command line arguments are as follows:
 
-pymail <Recipient> <Subject> <Body> <attachment> (Any other arguments are treated as paths to an attachment.)
+pymail (Recipient) (Subject) (Body) (attachment) (Any other arguments are treated as paths to an attachment.)
 
 If the arguments are not passed, the program will revert to the defaults defined in the config file, except for the attachments, which will remain empty.
 
